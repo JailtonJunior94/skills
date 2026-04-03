@@ -23,7 +23,17 @@ Este repositório reúne skills voltadas para o dia a dia de desenvolvimento de 
 ## Instalação
 
 ```bash
-npx skills add jailtonjunior/skills
+npx skills add https://github.com/JailtonJunior94/skills
+```
+
+Ou instale manualmente:
+
+```bash
+# Copia uma skill específica
+cp -r skills/bugfix ~/.claude/skills/bugfix
+
+# Ou cria um link simbólico para toda a coleção
+ln -s $(pwd)/skills ~/.claude/skills
 ```
 
 ## Uso
