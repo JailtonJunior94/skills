@@ -19,6 +19,8 @@ Este repositório reúne skills voltadas para o dia a dia de desenvolvimento de 
 | **reviewer** | Revisão técnica de código com foco em boas práticas |
 | **semantic-commit** | Geração de mensagens no padrão Conventional Commits |
 | **us-to-prd** | Conversão de User Stories para PRDs técnicos |
+| **postman-collection-generator** | Geração de collections do Postman a partir de APIs |
+| **skill-best-practices** | Boas práticas para criação de skills reutilizáveis |
 
 ## Instalação
 
@@ -62,7 +64,9 @@ skills/
 ├── refactor/SKILL.md
 ├── reviewer/SKILL.md
 ├── semantic-commit/SKILL.md
-└── us-to-prd/SKILL.md
+├── us-to-prd/SKILL.md
+├── postman-collection-generator/SKILL.md
+└── skill-best-practices/SKILL.md
 ```
 
 Cada skill é definida em um arquivo `SKILL.md` com frontmatter YAML (`name`, `description`) seguido das instruções de comportamento.
