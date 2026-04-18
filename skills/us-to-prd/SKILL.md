@@ -1,86 +1,77 @@
 ---
 name: us-to-prd
 description: |
-  Lê uma User Story (US) completa do Jira via MCP Atlassian e inicia a criação de um PRD
-  usando o fluxo definido em .claude/commands/create-prd.md.
-  Use quando o usuário fornece um ID de issue do Jira e pede PRD, ou menciona "US para PRD", "história para PRD".
-  Não use para criação de PRD sem referência a issue do Jira (usar create-prd diretamente)
-  nem para leitura de issue sem criação de PRD.
+  Lê uma User Story completa do Jira via MCP Atlassian e prepara um contexto consolidado
+  para iniciar a criação de um PRD pelo fluxo definido em .claude/commands/create-prd.md.
+  Use quando o usuário informar uma issue do Jira e pedir PRD, ou mencionar "US para PRD"
+  ou "história para PRD". Não use para criar PRD sem issue do Jira, nem para apenas
+  consultar issue sem gerar contexto para PRD.
 ---
 
 # US para PRD
 
-<critical>Ler TODO o conteúdo da US antes de chamar o command create-prd — incluindo description, comments, sub-tasks e links</critical>
-<critical>Preservar fielmente o conteúdo da US — não inventar nem omitir informações</critical>
-<critical>Após extrair o conteúdo, DEVE chamar o command .claude/commands/create-prd.md passando todo o contexto como entrada</critical>
+<critical>Ler a US completa antes de invocar create-prd: description, comments, sub-tasks e links relevantes</critical>
+<critical>Preservar fatos, decisões, restrições e dependências sem inventar conteúdo</critical>
+<critical>Ao final, invocar .claude/commands/create-prd.md com o contexto consolidado</critical>
+<critical>Preferir contexto mínimo suficiente para PRD; não transportar ruído operacional, duplicações ou navegação sem impacto funcional</critical>
 
 ## Entrada Obrigatória
-- Issue key do Jira (ex: PROJ-123).
-- Opcionalmente: cloudId do Atlassian (se não fornecido, será descoberto automaticamente).
+- Issue key do Jira no formato `PROJ-123`.
+- Opcional: `cloudId` do Atlassian. Se ausente, descobrir automaticamente.
 
 ## Procedimentos
+1. Validar a entrada mínima antes de qualquer chamada no Atlassian.
+   Exigir a issue key no formato `PROJ-123`.
+   Executar `python3 scripts/validate-issue-key.py "<issue-key>"`.
+   Descobrir o `cloudId` com `atlassian-getAccessibleAtlassianResources` quando ele não tiver sido informado.
+   Selecionar um recurso acessível com Jira disponível.
+   Encerrar com `blocked` se nenhum recurso válido estiver acessível.
 
-**Etapa 1: Descobrir Ambiente Atlassian**
-1. Se cloudId não fornecido, use `atlassian-getAccessibleAtlassianResources` para descobrir.
-2. Confirme que o recurso está acessível. Se não, retorne `blocked`.
+2. Ler a issue principal antes de consolidar qualquer contexto.
+   Usar `atlassian-getJiraIssue` para obter a issue.
+   Extrair, quando disponíveis, `summary`, `description`, `status`, `priority`, `labels`, `reporter`, `assignee`, `epic link`, `sprint` e `Acceptance Criteria`.
+   Extrair também campos customizados não vazios que alterem escopo, regra de negócio, dependência ou critério de aceite.
+   Ler todos os comentários da issue.
+   Encerrar com `blocked` se a issue não existir ou não estiver acessível.
 
-**Etapa 2: Extrair Dados Principais da US**
-1. Via `atlassian-getJiraIssue`, colete:
-   - Summary, Description, Status, Priority, Labels.
-   - Reporter, Assignee, Epic link, Sprint.
-   - Acceptance Criteria (campo customizado, se disponível).
-   - Campos customizados relevantes.
-2. Extraia todos os comentários da issue (expand comments) para contexto adicional.
+3. Coletar apenas o contexto relacionado que puder alterar o PRD.
+   Buscar sub-tarefas via `atlassian-searchJiraIssuesUsingJql` com `parent = <issue-key>`.
+   Para cada sub-tarefa, coletar ao menos `summary` e `description`.
+   Obter links de issue e links remotos via `atlassian-getJiraIssueRemoteIssueLinks` e campos de link da issue.
+   Ler `references/jira-context-rules.md` antes de decidir o que incluir de comentários, links, páginas do Confluence e lacunas.
+   Seguir apenas relações e links que adicionem requisito, decisão, dependência, exceção ou contexto funcional.
+   Se houver páginas do Confluence diretamente ligadas à definição da US, ler apenas os trechos necessários para preservar contexto funcional.
 
-**Etapa 3: Coletar Relações e Contexto Externo**
-1. Busque sub-tarefas via `atlassian-searchJiraIssuesUsingJql` com JQL: `parent = <issue-key>`.
-2. Colete summary e description de cada sub-tarefa.
-3. Via `atlassian-getJiraIssueRemoteIssueLinks` e campos de links, identifique issues vinculadas e links externos.
-4. Se houver links para Confluence, leia o conteúdo via `atlassian-getConfluencePage`.
+4. Consolidar o contexto em formato estável para handoff.
+   Ler `assets/context-template.md` para montar a estrutura de handoff.
+   Preservar o conteúdo original com o mínimo de reescrita.
+   Não incluir timestamps, narrativa operacional nem texto sem impacto no PRD.
+   Registrar ausências de campos opcionais em `Lacunas Observadas`.
 
-**Etapa 4: Consolidar Contexto**
-1. Organize todas as informações no formato estruturado:
-   ```markdown
-   # Contexto da US: <issue-key>
+5. Invocar o fluxo final de PRD.
+   Chamar `.claude/commands/create-prd.md` com o contexto consolidado.
+   Encerrar a skill após a invocação.
 
-   ## Rastreabilidade
-   - **Issue de Origem**: [PROJ-123](link)
-   - **Tipo**: User Story
-   - **Sprint/Epic**: <se disponível>
-   - **Data de Extração**: <timestamp>
+## Critérios de Seleção
+- Incluir comentários apenas quando mudarem requisito, escopo, regra, prioridade técnica, dependência ou exceção.
+- Incluir links externos apenas quando forem fonte direta de requisito ou decisão.
+- Ignorar conteúdo duplicado, navegação, ruído operacional e discussões sem impacto funcional.
 
-   ## Resumo
-   <summary>
+## Decisões Operacionais
+1. Ler tudo antes de resumir qualquer parte da US.
+2. Tratar a issue principal como fonte de verdade; usar comentários, sub-tarefas, links e Confluence apenas para complementar ou esclarecer.
+3. Preferir ausência explícita em `Lacunas Observadas` a inferência fraca.
+4. Preservar termos de negócio, nomes próprios, siglas e decisões exatamente como aparecem na origem quando forem relevantes ao PRD.
+5. Não promover comentário, link ou página externa a requisito central sem evidência textual.
+6. Preferir contexto consolidado curto e fiel a um dump extenso de conteúdo bruto.
 
-   ## Descrição Completa
-   <description formatada>
-
-   ## Critérios de Aceite
-   <acceptance criteria se disponível>
-
-   ## Comentários Relevantes
-   <comentários que adicionam contexto ou requisitos>
-
-   ## Sub-tarefas
-   <lista de sub-tarefas com descrições>
-
-   ## Issues Relacionadas
-   <links e relações com outras issues>
-
-   ## Contexto Adicional (Confluence)
-   <conteúdo de páginas vinculadas, se houver>
-   ```
-
-**Etapa 5: Invocar create-prd**
-1. Chame o command `.claude/commands/create-prd.md` passando todo o contexto consolidado como entrada.
-2. Esta skill encerra aqui — o restante do fluxo é responsabilidade do create-prd.
-
-## Condições de Parada
-- `done`: contexto extraído e command create-prd invocado com sucesso.
-- `blocked`: issue não encontrada, sem acesso ao Jira ou cloudId inválido.
-- `failed`: limite de tentativas de acesso ao MCP excedido.
+## Estados Finais
+- `done`: contexto consolidado e `create-prd` invocado com sucesso.
+- `blocked`: issue inexistente, sem acesso ao Jira ou sem recurso Atlassian válido.
+- `needs_input`: issue key ausente, ambígua ou dependência externa sem evidência suficiente para continuar com segurança.
+- `failed`: falha repetida no MCP que impeça a extração após tentativas razoáveis.
 
 ## Tratamento de Erros
-- Se a issue não for encontrada, verifique a grafia da key e informe o formato esperado (ex: `PROJ-123`).
-- Se o MCP Atlassian não responder, informe ao usuário para verificar a configuração do MCP e retorne `blocked`.
-- Se campos opcionais (Acceptance Criteria, Confluence) não estiverem disponíveis, prossiga sem eles e registre a ausência no contexto consolidado.
+- Se `scripts/validate-issue-key.py` falhar, informar o formato esperado: `PROJ-123`.
+- Se o MCP Atlassian não responder, informar a falha de acesso e retornar `blocked`.
+- Se comentários, subtarefas, Acceptance Criteria ou Confluence não estiverem disponíveis, continuar e registrar a ausência em `Lacunas Observadas`.
