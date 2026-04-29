@@ -9,20 +9,78 @@ Gerar um modelo de dashboard de observabilidade pronto para produção, estrutur
 
 ## Passo 1: Coletar Contexto do Serviço (OBRIGATÓRIO)
 
-Antes de qualquer geração, **sempre** perguntar ao usuário e aguardar resposta. Não inferir, não usar valores padrão silenciosamente.
+Antes de qualquer geração, **sempre** apresentar o formulário abaixo ao usuário e aguardar resposta. Não inferir, não usar valores padrão silenciosamente.
 
-1. Solicitar explicitamente os seguintes campos em uma única pergunta:
-   - **Nome do serviço** (`service_name`, ex.: `payments-api`)
-   - **Tipo do serviço** (ex.: API REST, gRPC, worker, consumer Kafka)
-   - **Plataforma de execução** (ex.: Kubernetes, ECS, VM)
-   - **Ambientes existentes** (`deployment_environment`, ex.: `dev`, `staging`, `prod`)
-   - **Regiões** (ex.: `sa-east-1`, `us-east-1`)
-   - **Volume aproximado de requisições** (RPS médio e pico)
-   - **SLO alvo** (ex.: 99,9% disponibilidade, P95 < 300ms)
-   - **Endpoints críticos** (rotas que precisam de visibilidade dedicada)
-   - **Dependências externas** (banco, cache, filas, APIs upstream)
-2. Se o usuário não fornecer um campo, perguntar novamente. Não prosseguir sem o contexto mínimo: `service_name`, ambientes, regiões e SLO alvo.
-3. Registrar o contexto coletado e usá-lo para preencher variáveis e thresholds nas etapas seguintes.
+1. Apresentar **cada campo como múltipla escolha** quando houver opções predefinidas, ou como campo aberto quando a resposta for livre. Usar exatamente este formato de pergunta:
+
+---
+
+**Para gerar o blueprint, responda as perguntas abaixo:**
+
+**1. Tipo do serviço**
+- [ ] A) API REST
+- [ ] B) API gRPC
+- [ ] C) Worker / Consumer (Kafka, SQS, RabbitMQ)
+- [ ] D) Híbrido (REST + Worker)
+- [ ] E) Outro: ___
+
+**2. Plataforma de execução**
+- [ ] A) Kubernetes
+- [ ] B) AWS ECS
+- [ ] C) VM / Bare Metal
+- [ ] D) Serverless (Lambda, Cloud Run)
+- [ ] E) Outro: ___
+
+**3. Ambientes existentes** _(marque todos que se aplicam)_
+- [ ] A) dev
+- [ ] B) staging
+- [ ] C) prod
+- [ ] D) Outro: ___
+
+**4. Regiões** _(marque todas que se aplicam)_
+- [ ] A) sa-east-1 (Brasil)
+- [ ] B) us-east-1 (Virgínia)
+- [ ] C) us-west-2 (Oregon)
+- [ ] D) eu-west-1 (Irlanda)
+- [ ] E) Outra: ___
+
+**5. Volume aproximado de requisições**
+- [ ] A) Baixo (< 100 RPS)
+- [ ] B) Médio (100–1.000 RPS)
+- [ ] C) Alto (1.000–10.000 RPS)
+- [ ] D) Muito alto (> 10.000 RPS)
+
+**6. SLO alvo de disponibilidade**
+- [ ] A) 99,0% (3,65 dias de downtime/ano)
+- [ ] B) 99,5%
+- [ ] C) 99,9% (8,7 horas/ano)
+- [ ] D) 99,95%
+- [ ] E) 99,99% (52 minutos/ano)
+
+**7. SLO alvo de latência (P95)**
+- [ ] A) < 100ms
+- [ ] B) < 300ms
+- [ ] C) < 500ms
+- [ ] D) < 1s
+- [ ] E) Outro: ___ms
+
+**8. Dependências externas** _(marque todas que se aplicam)_
+- [ ] A) Banco relacional (PostgreSQL, MySQL)
+- [ ] B) Banco NoSQL (MongoDB, DynamoDB)
+- [ ] C) Cache (Redis, Memcached)
+- [ ] D) Fila / Stream (Kafka, SQS, RabbitMQ)
+- [ ] E) API upstream (HTTP externo)
+- [ ] F) Nenhuma
+
+**Campos abertos (resposta livre):**
+
+- **Nome do serviço** (`service_name`): ___
+- **Endpoints críticos** (rotas com visibilidade dedicada, ex.: `POST /payments`): ___
+
+---
+
+2. Campos obrigatórios para prosseguir: nome do serviço, tipo (pergunta 1), ambientes (3), regiões (4) e SLO alvo (6 e 7). Se algum estiver ausente, reapresentar apenas as perguntas faltantes no mesmo formato de múltipla escolha.
+3. Registrar todas as respostas e usá-las para preencher variáveis, thresholds e filtros nas etapas seguintes.
 
 ## Passo 2: Padronizar Labels e Métricas (OBRIGATÓRIO)
 
