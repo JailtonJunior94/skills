@@ -1,0 +1,63 @@
+{
+  "title": "${SERVICE_NAME} — Hybrid OTel Blueprint",
+  "uid": "otel-hybrid-${SERVICE_NAME}",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "tags": ["otel", "hybrid", "sre", "${SERVICE_NAME}"],
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "templating": {
+    "list": [
+      {
+        "name": "DS_PROMETHEUS",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {}
+      },
+      {
+        "name": "DS_LOKI",
+        "type": "datasource",
+        "query": "loki",
+        "current": {}
+      },
+      {
+        "name": "DS_TEMPO",
+        "type": "datasource",
+        "query": "tempo",
+        "current": {}
+      },
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "query": "label_values(http_server_request_duration_seconds_count, service_name)",
+        "refresh": 1,
+        "includeAll": false
+      },
+      {
+        "name": "env",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "query": "label_values(http_server_request_duration_seconds_count{service_name=\"$service\"}, deployment_environment)",
+        "refresh": 1
+      },
+      {
+        "name": "region",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+        "query": "label_values(http_server_request_duration_seconds_count{service_name=\"$service\", deployment_environment=\"$env\"}, region)",
+        "refresh": 1
+      }
+    ]
+  },
+  "panels": [
+    { "type": "row", "title": "A. Golden Signals", "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }, "id": 1 },
+    { "type": "row", "title": "B. Service Health", "gridPos": { "x": 0, "y": 9, "w": 24, "h": 1 }, "id": 2 },
+    { "type": "row", "title": "C. Logs Deep Dive", "gridPos": { "x": 0, "y": 18, "w": 24, "h": 1 }, "id": 3 },
+    { "type": "row", "title": "D. Traces", "gridPos": { "x": 0, "y": 27, "w": 24, "h": 1 }, "id": 4 },
+    { "type": "row", "title": "E. SLO", "gridPos": { "x": 0, "y": 36, "w": 24, "h": 1 }, "id": 5 }
+  ],
+  "annotations": { "list": [] },
+  "refresh": "30s"
+}
