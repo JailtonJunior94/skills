@@ -1,0 +1,23 @@
+# Configuração opcional para azure-devops-epic-stories.
+# Coloque na raiz do repositório como `.ado-epic-stories.yml`.
+# Skill lê este arquivo subindo até 5 níveis de diretório a partir do cwd.
+# Formato: chave-valor flat, sem aninhamento. Comentários com `#` são suportados.
+
+# Obrigatórios para evitar perguntas em toda execução
+organization: minha-org
+project: Plataforma
+board: Squad-Acesso
+
+# Opcional: força um processo específico quando a detecção automática for ambígua.
+# Valores aceitos: Scrum, Agile, CMMI, Basic
+# process: Agile
+
+# Opcional: caminhos default para o work item dentro do projeto.
+# Quando ausentes, usa o board acima como areaPath.
+# default_area_path: Plataforma\\Acesso
+# default_iteration_path: Plataforma\\Sprints\\2026-Q2
+
+# Opcional: sobrescreve a detecção automática do tipo de child.
+# Útil em processos customizados que renomeiam o tipo.
+# child_type_override: User Story
+# epic_type_override: Epic

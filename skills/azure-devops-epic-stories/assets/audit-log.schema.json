@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Audit Log da Publicação no Azure DevOps",
+  "description": "Registro determinístico do que foi criado/vinculado em uma execução. Persistido em ./discoveries/epic-<slug>/audit-<UTC-timestamp>.json mesmo em falhas parciais.",
+  "type": "object",
+  "required": [
+    "version",
+    "timestamp",
+    "bundle_path",
+    "configuration",
+    "epic",
+    "user_stories",
+    "status"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC ISO 8601 com sufixo Z."
+    },
+    "bundle_path": {
+      "type": "string",
+      "description": "Caminho relativo do bundle de discovery consumido."
+    },
+    "configuration": {
+      "type": "object",
+      "required": ["organization", "project", "board", "epic_type", "child_type"],
+      "properties": {
+        "organization": { "type": "string" },
+        "project": { "type": "string" },
+        "board": { "type": "string" },
+        "epic_type": { "type": "string" },
+        "child_type": { "type": "string" },
+        "config_file": {
+          "type": ["string", "null"],
+          "description": "Caminho do .ado-epic-stories.yml quando usado."
+        }
+      }
+    },
+    "epic": {
+      "type": "object",
+      "required": ["title", "status"],
+      "properties": {
+        "ado_id": { "type": ["integer", "null"] },
+        "title": { "type": "string" },
+        "normalized_title": { "type": "string" },
+        "url": { "type": ["string", "null"] },
+        "status": {
+          "type": "string",
+          "enum": ["created", "reused", "force_created", "failed", "dry_run"]
+        },
+        "matched_existing_id": { "type": ["integer", "null"] },
+        "error": { "type": ["string", "null"] }
+      }
+    },
+    "user_stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["local_id", "title", "status"],
+        "properties": {
+          "local_id": { "type": "string", "pattern": "^\\d{2}$" },
+          "title": { "type": "string" },
+          "ado_id": { "type": ["integer", "null"] },
+          "url": { "type": ["string", "null"] },
+          "status": {
+            "type": "string",
+            "enum": ["created", "failed", "dry_run", "skipped"]
+          },
+          "link_status": {
+            "type": "string",
+            "enum": ["linked", "failed", "not_attempted"]
+          },
+          "error": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "batches": {
+      "type": "array",
+      "description": "Quando há mais de 10 US, registra os lotes executados.",
+      "items": {
+        "type": "object",
+        "required": ["index", "size", "executed"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 1 },
+          "size": { "type": "integer", "minimum": 1, "maximum": 10 },
+          "executed": { "type": "boolean" }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["done", "needs_input", "blocked", "failed", "partial"]
+    },
+    "notes": {
+      "type": "string",
+      "description": "Texto livre para observações relevantes para reconciliação."
+    }
+  }
+}
