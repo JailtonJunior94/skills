@@ -74,7 +74,7 @@ Essa classificacao nao move nem duplica skills. Ela apenas organiza a descoberta
 Foco em discovery, backlog, refinamento de escopo e consolidacao de insumos de produto.
 
 - `epic-story-discovery`
-- `us-to-prd`
+- `tracker-to-prd`
 - `azure-devops-epic-stories`
 
 ### `devteam`
@@ -89,6 +89,7 @@ Foco em execucao tecnica, entrega, revisao, observabilidade e artefatos operacio
 - `postman-collection-generator`
 - `otel-grafana-dashboards`
 - `otel-hybrid-dashboard-blueprint`
+- `tech-debt-register`
 
 ### `geral`
 
@@ -101,7 +102,7 @@ Skills transversais, uteis tanto para PM quanto para dev team.
 
 ## Skills disponiveis
 
-Atualmente o catalogo contem 15 skills ativas no workspace.
+Atualmente o catalogo contem 16 skills ativas no workspace.
 
 | Skill | Perfil | Objetivo principal | Casos de uso tipicos |
 | --- | --- | --- | --- |
@@ -119,7 +120,8 @@ Atualmente o catalogo contem 15 skills ativas no workspace.
 | `pull-request` | `devteam` | Gerar, revisar, criar ou atualizar PRs com base em diff, commits e contexto do repositorio. | Rascunho de PR, publicacao via GitHub, revisao de titulo e body. |
 | `recursive-review-bugfix` | `devteam` | Orquestrar um ciclo iterativo de review e bugfix ate atingir veredito aprovado. | Validacao final pre-merge, reducao de achados criticos, fechamento de lacunas de qualidade. |
 | `semantic-commit` | `devteam` | Sugerir ou revisar mensagens de commit semantico com Conventional Commits. | Commit message generation, classificacao de tipo, split de commits. |
-| `us-to-prd` | `product-manager` | Ler uma user story no Jira e consolidar o contexto necessario para iniciar um PRD. | Transformar US em insumo para PRD, consolidar requisitos e dependencias do Jira. |
+| `tech-debt-register` | `devteam` | Registrar debito tecnico com confronto de codebase e clarificacao em oito eixos. | Documentar gap de qualidade, refactor pendente ou risco arquitetural com problema e plano de acao prontos para tracker. |
+| `tracker-to-prd` | `product-manager` | Ler uma user story ou epico no Jira ou Azure DevOps, confrontar com o codebase e consolidar contexto para iniciar um PRD. | Transformar US/epico em insumo para PRD, com confronto de codebase e clarificacao iterativa antes do handoff para create-prd. |
 
 ## Catalogo detalhado
 
@@ -479,24 +481,55 @@ Dependencias:
 - Git;
 - Python 3 para o validador do cabecalho.
 
-### `us-to-prd`
+### `tech-debt-register`
 
-Objetivo: ler uma user story completa no Jira e consolidar o contexto necessario para iniciar a criacao de um PRD.
+Objetivo: registrar debito tecnico de forma estruturada a partir de uma descricao livre, confrontar com o codebase informado e produzir documento detalhado com problema e plano de acao.
 
 Entradas esperadas:
-- issue key no formato `PROJ-123`;
-- opcionalmente `cloudId`.
+- descricao livre do debito (ex.: "preciso criar autenticacao na minha API");
+- opcional: path local ou modulo suspeito;
+- opcional: `owner/repo` no GitHub para confronto via gh.
 
 Saida principal:
-- contexto consolidado para invocar o fluxo de criacao de PRD.
+- `.specs/tech-debt-<slug>/debt.md` com 12 secoes (identificacao, problema, natureza, localizacao no codebase, blast radius, severidade x urgencia, estrategia, esforco, riscos, plano de acao, lacunas, proximo passo);
+- `.specs/tech-debt-<slug>/clarifications.md` append-only com cada rodada.
 
 Use quando:
-- a US ja existe no Jira e voce quer subir o nivel para PRD;
-- precisa preservar comentarios, dependencias e contexto funcional relevante.
+- precisa registrar debito tecnico ja conhecido com rastreabilidade;
+- quer confrontar a descricao com o codigo antes de planejar pagamento;
+- precisa de clarificacao iterativa em multipla escolha para chegar em problema + solucao alinhados.
 
 Nao use quando:
-- nao existe issue de origem;
-- o objetivo e apenas consultar Jira sem preparar PRD.
+- o item e PRD de feature nova (use `tracker-to-prd`);
+- e bug ativo em producao (use canais de incidente);
+- e planejamento de arquitetura completa.
+
+Dependencias:
+- Python 3 para `slugify.py`;
+- `gh` autenticado quando confrontar repo remoto.
+
+### `tracker-to-prd`
+
+Objetivo: ler uma user story ou epico completo no Jira (MCP Atlassian) ou Azure DevOps (MCP azure-devops), confrontar requisitos com o codebase informado e consolidar contexto para iniciar a criacao de um PRD.
+
+Entradas esperadas:
+- identificador de origem: `PROJ-123` (Jira), URL ou triplo `org/project/id` (Azure DevOps);
+- opcional: escopo de codebase (caminho local ou `owner/repo` no GitHub);
+- opcional para Jira: `cloudId`.
+
+Saida principal:
+- bundle em `.specs/prd-<slug>/context.md` e `clarifications.md` append-only com cada rodada;
+- instrucao explicita de handoff para a skill `create-prd`.
+
+Use quando:
+- a US ou epico ja existe no Jira ou Azure DevOps e voce quer subir o nivel para PRD;
+- precisa preservar comentarios, dependencias e contexto funcional relevante;
+- quer confrontar requisitos com codigo existente antes de redigir PRD.
+
+Nao use quando:
+- nao existe issue/work item de origem;
+- o objetivo e apenas consultar o tracker sem preparar PRD;
+- precisa criar work items em ferramentas externas.
 
 Dependencias:
 - Atlassian MCP;
@@ -644,7 +677,11 @@ Use a skill jira-tasks para transformar esta decomposicao local em tasks filhas 
 ```
 
 ```text
-Use a skill us-to-prd para consolidar a US PROJ-231 e preparar o contexto do PRD.
+Use a skill tracker-to-prd para consolidar a US PROJ-231 e preparar o contexto do PRD.
+```
+
+```text
+Use a skill tech-debt-register para registrar o debito "preciso criar autenticacao na API", confronte com o path internal/ e conduza clarificacao nos oito eixos.
 ```
 
 ```text
@@ -780,7 +817,8 @@ skills/
 ├── pull-request/
 ├── recursive-review-bugfix/
 ├── semantic-commit/
-└── us-to-prd/
+├── tech-debt-register/
+└── tracker-to-prd/
 ```
 
 Exemplo de estrutura interna de uma skill:

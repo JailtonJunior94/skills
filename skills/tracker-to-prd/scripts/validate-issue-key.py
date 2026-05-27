@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""Valida formato de issue key do Jira (`PROJ-123`).
+
+Apenas Jira. Para detectar Jira vs Azure DevOps a partir de input livre,
+usar `scripts/detect-source.py`.
+"""
 import re
 import sys
 

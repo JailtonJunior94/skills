@@ -535,43 +535,72 @@ Use semantic-commit no diff atual.
 Infera tipo pelo diff, sugira mensagem final e aponte se precisa split.
 ```
 
-### `us-to-prd`
+### `tracker-to-prd`
 
-- Entradas minimas: issue key do Jira no formato `PROJ-123`.
-- Dependencias: Python 3, Atlassian MCP, `.claude/commands/create-prd.md`.
-- Uso por agente: `Claude` alto; `Codex` e `Gemini` parciais; `Copilot CLI` baixo. A etapa final depende explicitamente de `.claude/commands/create-prd.md`.
+- Entradas minimas: identificador de US ou epico — `PROJ-123` (Jira) ou URL/triplo `org/project/id` (Azure DevOps).
+- Dependencias: Python 3, MCP Atlassian ou MCP azure-devops conforme o backend, `gh` quando o codebase a confrontar for repo remoto.
+- Uso por agente: `Claude` alto; `Codex` e `Gemini` parciais (dependem de paridade nos nomes MCP); `Copilot CLI` baixo.
+- Saida: bundle em `.specs/prd-<slug>/context.md` mais `clarifications.md` append-only. A skill nao invoca `create-prd` automaticamente; instrui o handoff explicito ao final.
 
 Prompt mandatorio:
 
 ```text
-Use a skill us-to-prd para a issue PAY-142.
-Leia description, comments, subtasks e links relevantes antes de consolidar o contexto.
-Ao final, invoque o fluxo .claude/commands/create-prd.md com o contexto consolidado.
+Use a skill tracker-to-prd para a issue PAY-142 (ou para o work item https://dev.azure.com/<org>/<proj>/_workitems/edit/4567).
+Leia description, comments, subtasks e links relevantes, confronte os requisitos com o codebase informado e conduza rodadas de clarificacao ate cobrir as seis categorias do create-prd.
+Ao final, materialize o bundle em .specs/prd-<slug>/context.md e instrua o handoff para create-prd.
 ```
 
 Prompt eficiente:
 
 ```text
-Siga skills/us-to-prd/SKILL.md.
-Para a issue PAY-142, valide a issue key, descubra cloudId se faltar, leia a issue completa no Jira, subtarefas, links remotos e paginas Confluence relevantes, preserve apenas fatos que alterem escopo ou requisito e monte o handoff usando assets/context-template.md.
-Depois invoque .claude/commands/create-prd.md.
-Se esse comando nao existir no ambiente, pare e reporte a limitacao explicitamente.
+Siga skills/tracker-to-prd/SKILL.md.
+Detecte o backend pelo input, leia a US/epico completo, confronte os requisitos com o codebase (caminho local ou owner/repo no GitHub) respeitando o cap de 15 buscas por rodada, conduza clarificacao ate as 6 categorias estarem respondidas e nenhum conflito aberto, grave o bundle e exiba a instrucao literal para create-prd.
 ```
 
 Prompt economico:
 
 ```text
-Use us-to-prd para PAY-142.
-Consolide o contexto funcional minimo da US e invoque .claude/commands/create-prd.md se o ambiente suportar.
+Use tracker-to-prd para PAY-142, confronto pulado.
+Materialize o bundle minimo viavel e instrua a invocar create-prd em seguida.
+```
+
+### `tech-debt-register`
+
+- Entradas minimas: descricao livre do debito em PT-BR.
+- Dependencias: Python 3 para `slugify.py`; `gh` apenas quando confrontar repo remoto. Sem MCP externo.
+- Uso por agente: `Claude` alto; `Codex`, `Gemini` e `Copilot CLI` viaveis desde que ofereçam equivalente a `AskUserQuestion` ou aceitem perguntas iterativas em texto.
+- Saida: `.specs/tech-debt-<slug>/debt.md` (12 secoes) e `.specs/tech-debt-<slug>/clarifications.md` append-only.
+
+Prompt mandatorio:
+
+```text
+Use a skill tech-debt-register para o debito: "preciso criar autenticacao na minha API".
+Confronte com o path local internal/ e conduza clarificacao ate os oito eixos estarem respondidos.
+Materialize o debt.md em .specs/tech-debt-<slug>/ com problema, localizacao, severidade x urgencia, estrategia, esforco e plano de acao.
+```
+
+Prompt eficiente:
+
+```text
+Siga skills/tech-debt-register/SKILL.md.
+Identifique a natureza pela debt-taxonomy, derive 2-4 termos buscaveis, confronte com Grep ou gh respeitando o cap de 15 buscas por rodada, conduza no maximo 4 perguntas por chamada ate os 8 eixos estarem fechados e nenhum candidato em conflicting, e materialize debt.md + clarifications.md.
+```
+
+Prompt economico:
+
+```text
+Use tech-debt-register para o debito X. Confronte com cwd, conduza apenas as perguntas estritamente necessarias, materialize debt.md minimo viavel.
 ```
 
 ## Excecoes e Cuidados
 
 - `azure-devops-epic-stories`: ja possui referencia explicita de naming MCP multi-agente. Use-a como padrao para adaptar outras skills com MCP.
-- `confluence-changelog-publisher`, `jira-tasks` e `us-to-prd`: dependem de integracao Atlassian real; sem isso, a skill deve parar em vez de inventar respostas.
+- `confluence-changelog-publisher` e `jira-tasks`: dependem de integracao Atlassian real; sem isso, a skill deve parar em vez de inventar respostas.
+- `tracker-to-prd`: depende de MCP Atlassian ou MCP azure-devops conforme o backend detectado; sem o MCP correspondente, encerra com `blocked`.
 - `github-pr-comment-triage` e `pull-request`: exigem `gh` instalado e autenticado para escrita remota.
 - `recursive-review-bugfix`: depende de duas skills externas que este repo nao define.
-- `us-to-prd`: e a skill menos portavel do catalogo por depender de `.claude/commands/create-prd.md`.
+- `tracker-to-prd`: nao invoca `create-prd` automaticamente. Materializa o bundle e instrui o usuario a executar `create-prd` no orchestrator em seguida — quem chamar a skill precisa garantir a presenca do `create-prd` upstream.
+- `tech-debt-register`: independente de MCP externo. Funciona offline desde que `Grep`/`Read` ou `gh` estejam disponiveis. Nao auto-invoca skill de tracker; cabe ao usuario decidir o destino.
 - `Copilot CLI`: trate como executor manual. O repositorio nao documenta equivalentes nativos para MCP, `AskUserQuestion` ou auto-discovery de skill.
 
 ## Escolha Rapida
@@ -581,6 +610,7 @@ Consolide o contexto funcional minimo da US e invoque .claude/commands/create-pr
 - Use `github-pr-comment-triage` quando a revisao ja esta publicada.
 - Use `epic-story-discovery` antes de `azure-devops-epic-stories`.
 - Use `jira-tasks` depois que a decomposicao local ja existir.
-- Use `us-to-prd` quando a origem da verdade estiver no Jira e o destino for PRD.
+- Use `tracker-to-prd` quando a origem da verdade estiver no Jira ou no Azure DevOps e o destino for PRD.
+- Use `tech-debt-register` quando precisar documentar debito tecnico com confronto de codebase e clarificacao iterativa antes de levar ao tracker ou ao planejamento.
 - Use `otel-grafana-dashboards` para gerar artefatos Grafana prontos.
 - Use `otel-hybrid-dashboard-blueprint` para desenhar estrutura portavel entre Grafana e Coralogix.

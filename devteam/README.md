@@ -14,3 +14,4 @@ As skills reais continuam em `skills/`. Este diretorio existe apenas para descob
 - [`postman-collection-generator`](../skills/postman-collection-generator/SKILL.md): geracao de collections Postman a partir do codigo da API.
 - [`otel-grafana-dashboards`](../skills/otel-grafana-dashboards/SKILL.md): geracao de dashboards Grafana para servicos Go com OpenTelemetry.
 - [`otel-hybrid-dashboard-blueprint`](../skills/otel-hybrid-dashboard-blueprint/SKILL.md): blueprint de observabilidade hibrida Grafana + Coralogix para times SRE e plataforma.
+- [`tech-debt-register`](../skills/tech-debt-register/SKILL.md): registro estruturado de debito tecnico com confronto de codebase (local ou via gh) e clarificacao em oito eixos (natureza, sintoma, localizacao, blast radius, severidade, urgencia, estrategia de pagamento, esforco).
