@@ -74,6 +74,7 @@ Essa classificacao nao move nem duplica skills. Ela apenas organiza a descoberta
 Foco em discovery, backlog, refinamento de escopo e consolidacao de insumos de produto.
 
 - `epic-story-discovery`
+- `technical-discovery-production`
 - `tracker-to-prd`
 - `azure-devops-epic-stories`
 
@@ -89,6 +90,7 @@ Foco em execucao tecnica, entrega, revisao, observabilidade e artefatos operacio
 - `postman-collection-generator`
 - `otel-grafana-dashboards`
 - `otel-hybrid-dashboard-blueprint`
+- `technical-discovery-production`
 - `tech-debt-register`
 
 ### `geral`
@@ -102,7 +104,7 @@ Skills transversais, uteis tanto para PM quanto para dev team.
 
 ## Skills disponiveis
 
-Atualmente o catalogo contem 16 skills ativas no workspace.
+Atualmente o catalogo contem 17 skills ativas no workspace.
 
 | Skill | Perfil | Objetivo principal | Casos de uso tipicos |
 | --- | --- | --- | --- |
@@ -120,6 +122,7 @@ Atualmente o catalogo contem 16 skills ativas no workspace.
 | `pull-request` | `devteam` | Gerar, revisar, criar ou atualizar PRs com base em diff, commits e contexto do repositorio. | Rascunho de PR, publicacao via GitHub, revisao de titulo e body. |
 | `recursive-review-bugfix` | `devteam` | Orquestrar um ciclo iterativo de review e bugfix ate atingir veredito aprovado. | Validacao final pre-merge, reducao de achados criticos, fechamento de lacunas de qualidade. |
 | `semantic-commit` | `devteam` | Sugerir ou revisar mensagens de commit semantico com Conventional Commits. | Commit message generation, classificacao de tipo, split de commits. |
+| `technical-discovery-production` | `product-manager, devteam` | Conduzir discovery tecnico orientado a producao com rodadas obrigatorias sobre viabilidade, arquitetura, seguranca, volumetria, observabilidade, confiabilidade e custo. | System design, refinamento tecnico, analise de viabilidade, arquitetura production-ready, preparacao para quebrar em epicos e features. |
 | `tech-debt-register` | `devteam` | Registrar debito tecnico com confronto de codebase e clarificacao em oito eixos. | Documentar gap de qualidade, refactor pendente ou risco arquitetural com problema e plano de acao prontos para tracker. |
 | `tracker-to-prd` | `product-manager` | Ler uma user story ou epico no Jira ou Azure DevOps, confrontar com o codebase e consolidar contexto para iniciar um PRD. | Transformar US/epico em insumo para PRD, com confronto de codebase e clarificacao iterativa antes do handoff para create-prd. |
 
@@ -507,6 +510,35 @@ Nao use quando:
 Dependencias:
 - Python 3 para `slugify.py`;
 - `gh` autenticado quando confrontar repo remoto.
+
+### `technical-discovery-production`
+
+Objetivo: conduzir discovery tecnico production-ready em PT-BR com rodadas obrigatorias de multipla escolha sobre objetivo, escopo, viabilidade, arquitetura, dados, volumetria, seguranca, confiabilidade, observabilidade, rollout e custo, produzindo um dossier local pronto para decomposicao em epicos e features.
+
+Entradas esperadas:
+- tema da iniciativa, problema ou oportunidade;
+- contexto inicial de negocio e tecnico;
+- opcionalmente materiais de apoio como PRD, RFC, diagramas, contratos, logs, dashboards e restricoes regulatorias.
+
+Saida principal:
+- `discoveries/technical-<slug>/bundle.json`;
+- `discoveries/technical-<slug>/discovery.md`;
+- `discoveries/technical-<slug>/transcript.md`.
+
+Use quando:
+- precisa confrontar uma ideia ou demanda com riscos reais de producao;
+- quer alinhar product manager e dev team em viabilidade, arquitetura e trade-offs antes de backlog;
+- precisa sair com um documento tecnico pronto para quebrar em epicos e features.
+
+Nao use quando:
+- o objetivo ja e implementar codigo;
+- quer apenas brainstorming sem tomada de decisao;
+- precisa criar tasks finais diretamente no tracker.
+
+Dependencias:
+- Python 3;
+- escrita local no repositorio;
+- disciplina de clarificacao em multipla escolha, com ou sem UI estruturada do agente.
 
 ### `tracker-to-prd`
 

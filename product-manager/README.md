@@ -7,5 +7,6 @@ As skills reais continuam em `skills/`. Este diretorio existe apenas para descob
 ## Skills desta pasta
 
 - [`epic-story-discovery`](../skills/epic-story-discovery/SKILL.md): discovery estruturada de epico e user stories com perguntas obrigatorias, KPIs, trade-offs e edge cases antes de qualquer publicacao externa.
+- [`technical-discovery-production`](../skills/technical-discovery-production/SKILL.md): discovery tecnico production-ready em PT-BR com rodadas obrigatorias sobre viabilidade, arquitetura, seguranca, volumetria, observabilidade, confiabilidade e custo, pronto para decomposicao em epicos e features.
 - [`tracker-to-prd`](../skills/tracker-to-prd/SKILL.md): consolidacao de contexto de uma user story ou epico do Jira (MCP Atlassian) ou Azure DevOps (MCP azure-devops), com confronto opcional contra o codebase, para iniciar a criacao de PRD com menos ruido operacional.
 - [`azure-devops-epic-stories`](../skills/azure-devops-epic-stories/SKILL.md): publicacao de bundles de discovery no Azure DevOps como epico e user stories vinculadas, com validacao, dry-run e audit log.
