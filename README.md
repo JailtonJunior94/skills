@@ -90,8 +90,9 @@ Foco em execucao tecnica, entrega, revisao, observabilidade e artefatos operacio
 - `postman-collection-generator`
 - `otel-grafana-dashboards`
 - `otel-hybrid-dashboard-blueprint`
-- `technical-discovery-production`
+- `taskfile-production`
 - `tech-debt-register`
+- `technical-discovery-production`
 
 ### `geral`
 
@@ -104,7 +105,7 @@ Skills transversais, uteis tanto para PM quanto para dev team.
 
 ## Skills disponiveis
 
-Atualmente o catalogo contem 17 skills ativas no workspace.
+Atualmente o catalogo contem 18 skills ativas no workspace.
 
 | Skill | Perfil | Objetivo principal | Casos de uso tipicos |
 | --- | --- | --- | --- |
@@ -122,8 +123,9 @@ Atualmente o catalogo contem 17 skills ativas no workspace.
 | `pull-request` | `devteam` | Gerar, revisar, criar ou atualizar PRs com base em diff, commits e contexto do repositorio. | Rascunho de PR, publicacao via GitHub, revisao de titulo e body. |
 | `recursive-review-bugfix` | `devteam` | Orquestrar um ciclo iterativo de review e bugfix ate atingir veredito aprovado. | Validacao final pre-merge, reducao de achados criticos, fechamento de lacunas de qualidade. |
 | `semantic-commit` | `devteam` | Sugerir ou revisar mensagens de commit semantico com Conventional Commits. | Commit message generation, classificacao de tipo, split de commits. |
-| `technical-discovery-production` | `product-manager, devteam` | Conduzir discovery técnico orientado a produção com rodadas obrigatórias sobre viabilidade, arquitetura, segurança, volumetria, observabilidade, confiabilidade e custo. | System design, refinamento técnico, análise de viabilidade, arquitetura production-ready, preparação para quebrar em épicos e features. |
+| `taskfile-production` | `devteam` | Configurar e operacionalizar o Taskfile (go-task) de forma robusta e production-ready. | Padronizacao de build, testes, lint e CI/CD; migracao de Makefile; automacao multiplataforma. |
 | `tech-debt-register` | `devteam` | Registrar debito tecnico com confronto de codebase e clarificacao em oito eixos. | Documentar gap de qualidade, refactor pendente ou risco arquitetural com problema e plano de acao prontos para tracker. |
+| `technical-discovery-production` | `product-manager, devteam` | Conduzir discovery técnico orientado a produção com rodadas obrigatórias sobre viabilidade, arquitetura, segurança, volumetria, observabilidade, confiabilidade e custo. | System design, refinamento técnico, análise de viabilidade, arquitetura production-ready, preparação para quebrar em épicos e features. |
 | `tracker-to-prd` | `product-manager` | Ler uma user story ou epico no Jira ou Azure DevOps, confrontar com o codebase e consolidar contexto para iniciar um PRD. | Transformar US/epico em insumo para PRD, com confronto de codebase e clarificacao iterativa antes do handoff para create-prd. |
 
 ## Catalogo detalhado
@@ -483,6 +485,34 @@ Nao use quando:
 Dependencias:
 - Git;
 - Python 3 para o validador do cabecalho.
+
+### `taskfile-production`
+
+Objetivo: Configurar e operacionalizar o Taskfile (go-task) de forma robusta e production-ready, padronizando tarefas de build, geracao de mocks, testes, lint, segurança e automacao em esteiras CI/CD.
+
+Entradas esperadas:
+- Projeto alvo (novo ou existente);
+- Stack principal e gerenciador de dependencias;
+- Opcionalmente: ferramentas ja adotadas e plataforma de CI/CD.
+
+Saida principal:
+- `Taskfile.yml` orquestrador na raiz;
+- Diretorio `taskfiles/` com Taskfiles modulares (`build.yml`, `test.yml`, `lint.yml`, etc.);
+- Scripts auxiliares isolados em `taskfiles/scripts/`;
+- Workflows de CI/CD e configuracoes de ambiente.
+
+Use quando:
+- precisa criar, padronizar ou versionar Taskfile;
+- quer migrar de Makefile ou scripts soltos para uma ferramenta moderna;
+- precisa de automacao multiplataforma consistente entre local e CI/CD.
+
+Nao use quando:
+- quer gerenciar pipelines que nao usam Taskfile;
+- o objetivo e escrever a logica de negocio da aplicacao.
+
+Dependencias:
+- Task (go-task);
+- Python 3 para scripts de validacao e versao.
 
 ### `tech-debt-register`
 
