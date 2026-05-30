@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Build multiplataforma (macOS, Windows, Linux). Usa fingerprint de sources
+# para evitar recompilacao desnecessaria. Adapte os comandos a sua stack.
+
+vars:
+  APP_NAME: '{{.APP_NAME | default "app"}}'
+  BIN_DIR: '{{.BIN_DIR | default "bin"}}'
+  BUILD_OUTPUT: '{{.BIN_DIR}}/{{.APP_NAME}}{{exeExt}}'
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+  LDFLAGS: '-s -w -X main.version={{.VERSION}}'
+
+tasks:
+  run:
+    desc: Compila e executa a aplicacao localmente.
+    deps: [build]
+    cmds:
+      - '{{.BUILD_OUTPUT}}'
+
+  build:
+    desc: Compila o binario da aplicacao para o SO atual.
+    cmds:
+      - go build -trimpath -ldflags '{{.LDFLAGS}}' -o {{.BUILD_OUTPUT}} ./cmd/{{.APP_NAME}}
+    sources:
+      - '**/*.go'
+      - go.mod
+      - go.sum
+      - exclude: '**/*_test.go'
+    generates:
+      - '{{.BUILD_OUTPUT}}'
+
+  build:all:
+    desc: Cross-compile para linux, darwin e windows (amd64 e arm64).
+    cmds:
+      - for: { matrix: { GOOS: [linux, darwin, windows], GOARCH: [amd64, arm64] } }
+        cmd: >-
+          GOOS={{.ITEM.GOOS}} GOARCH={{.ITEM.GOARCH}}
+          go build -trimpath -ldflags '{{.LDFLAGS}}'
+          -o {{.BIN_DIR}}/{{.APP_NAME}}_{{.ITEM.GOOS}}_{{.ITEM.GOARCH}}{{if eq .ITEM.GOOS "windows"}}.exe{{end}}
+          ./cmd/{{.APP_NAME}}
+
+  clean:
+    desc: Remove artefatos de build e cache do Task.
+    cmds:
+      - cmd: rm -rf {{.BIN_DIR}} .task
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "Remove-Item -Recurse -Force -ErrorAction SilentlyContinue {{.BIN_DIR}}, .task"
+        platforms: [windows]

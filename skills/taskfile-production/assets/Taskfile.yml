@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Orquestrador fino. Toda a logica fica isolada em taskfiles/ para nao
+# conflitar com o codigo-fonte da aplicacao (cmd/, internal/, src/...).
+
+includes:
+  build:
+    taskfile: ./taskfiles/build.yml
+  test:
+    taskfile: ./taskfiles/test.yml
+  lint:
+    taskfile: ./taskfiles/lint.yml
+  security:
+    taskfile: ./taskfiles/security.yml
+  mocks:
+    taskfile: ./taskfiles/mocks.yml
+  ci:
+    taskfile: ./taskfiles/ci.yml
+    internal: true
+
+silent: true
+
+vars:
+  APP_NAME: '{{.APP_NAME | default "app"}}'
+  BIN_DIR: '{{.BIN_DIR | default "bin"}}'
+
+tasks:
+  default:
+    desc: Lista todas as tarefas disponiveis.
+    cmds:
+      - task --list-all
+
+  check:
+    desc: Validacao local rapida (lint + testes unitarios).
+    cmds:
+      - task: lint:run
+      - task: test:unit
+
+  ci:
+    desc: Pipeline completa usada na esteira (lint, testes, seguranca, build).
+    cmds:
+      - task: ci:pipeline

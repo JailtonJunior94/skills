@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Verificacao de vulnerabilidades (vulncheck) e auditoria de dependencias.
+
+tasks:
+  vulncheck:
+    desc: Verifica vulnerabilidades conhecidas no codigo e dependencias.
+    preconditions:
+      - sh: command -v govulncheck >/dev/null 2>&1
+        msg: "govulncheck ausente. Instale: go install golang.org/x/vuln/cmd/govulncheck@latest"
+    cmds:
+      - govulncheck ./...
+
+  audit:
+    desc: Audita modulos e checa atualizacoes de seguranca.
+    cmds:
+      - go list -m -u all
+      - go mod verify
+
+  scan:
+    desc: Roda toda a verificacao de seguranca (vulncheck + audit).
+    cmds:
+      - task: vulncheck
+      - task: audit

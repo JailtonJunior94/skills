@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Lint e formatacao. As tarefas falham a pipeline quando ha violacoes.
+
+tasks:
+  run:
+    desc: Executa o linter estatico (golangci-lint).
+    preconditions:
+      - sh: command -v golangci-lint >/dev/null 2>&1
+        msg: "golangci-lint ausente. Instale: https://golangci-lint.run/welcome/install/"
+    cmds:
+      - golangci-lint run ./...
+
+  fix:
+    desc: Aplica correcoes automaticas do linter.
+    cmds:
+      - golangci-lint run --fix ./...
+
+  fmt:
+    desc: Formata o codigo e organiza imports.
+    cmds:
+      - gofmt -l -w .
+      - cmd: command -v goimports >/dev/null 2>&1 && goimports -w . || true
+        platforms: [linux, darwin]
+
+  fmt:check:
+    desc: Falha se houver arquivos nao formatados (uso em CI).
+    preconditions:
+      - sh: '[ -z "$(gofmt -l .)" ]'
+        msg: "Existem arquivos nao formatados. Rode 'task lint:fmt'."
+    cmds:
+      - echo "Formatacao OK."
+
+  tidy:
+    desc: Verifica se go.mod/go.sum estao consistentes.
+    cmds:
+      - go mod tidy
+      - cmd: git diff --exit-code go.mod go.sum
+        platforms: [linux, darwin]

@@ -1,0 +1,11 @@
+# Cache local do Task (fingerprints de sources/generates) - nunca commitar.
+.task/
+
+# Artefatos de build e cobertura
+bin/
+coverage/
+
+# Arquivos de ambiente reais
+.env
+.env.test
+.env.local

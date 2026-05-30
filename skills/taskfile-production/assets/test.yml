@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Testes unitarios e de integracao isolados. Integration usa dotenv e
+# preconditions para garantir dependencias (ex.: containers) antes de rodar.
+
+vars:
+  COVERAGE_DIR: '{{.COVERAGE_DIR | default "coverage"}}'
+  UNIT_PROFILE: '{{.COVERAGE_DIR}}/unit.out'
+  INTEGRATION_PROFILE: '{{.COVERAGE_DIR}}/integration.out'
+
+tasks:
+  all:
+    desc: Executa testes unitarios e de integracao.
+    cmds:
+      - task: unit
+      - task: integration
+
+  unit:
+    desc: Executa testes unitarios com cobertura.
+    cmds:
+      - mkdir -p {{.COVERAGE_DIR}}
+      - go test -race -covermode=atomic -coverprofile={{.UNIT_PROFILE}} -short ./...
+    sources:
+      - '**/*.go'
+      - go.mod
+      - go.sum
+    generates:
+      - '{{.UNIT_PROFILE}}'
+
+  integration:
+    desc: Executa testes de integracao (requer servicos de apoio).
+    dotenv: ['.env.test', '.env']
+    preconditions:
+      - sh: docker info >/dev/null 2>&1
+        msg: "Docker nao esta disponivel; suba as dependencias antes dos testes de integracao."
+    cmds:
+      - mkdir -p {{.COVERAGE_DIR}}
+      - go test -race -covermode=atomic -coverprofile={{.INTEGRATION_PROFILE}} -tags=integration ./...
+    requires:
+      vars: [DATABASE_URL]
+
+  coverage:
+    desc: Gera relatorio de cobertura agregado em HTML.
+    deps: [unit]
+    cmds:
+      - go tool cover -html={{.UNIT_PROFILE}} -o {{.COVERAGE_DIR}}/coverage.html
+      - go tool cover -func={{.UNIT_PROFILE}}
+
+  watch:
+    desc: Reexecuta os testes unitarios ao alterar arquivos.
+    watch: true
+    sources:
+      - '**/*.go'
+    cmds:
+      - go test -short ./...

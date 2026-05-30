@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+version: '3'
+
+# Geracao de mocks isolada. Usa fingerprint de sources para so regenerar
+# quando interfaces mudam. Adapte para mockery, moq, gomock, etc.
+
+tasks:
+  generate:
+    desc: Gera mocks a partir das interfaces do projeto.
+    preconditions:
+      - sh: command -v mockery >/dev/null 2>&1
+        msg: "mockery ausente. Instale: go install github.com/vektra/mockery/v2@latest"
+    cmds:
+      - mockery
+    sources:
+      - .mockery.yaml
+      - '**/*.go'
+      - exclude: '**/mocks/**'
+      - exclude: '**/*_test.go'
+    generates:
+      - '**/mocks/**/*.go'
+
+  clean:
+    desc: Remove mocks gerados.
+    cmds:
+      - cmd: find . -type d -name mocks -prune -exec rm -rf {} +
+        platforms: [linux, darwin]
+      - cmd: powershell -Command "Get-ChildItem -Recurse -Directory -Filter mocks | Remove-Item -Recurse -Force"
+        platforms: [windows]
+
+  verify:
+    desc: Falha se os mocks estiverem desatualizados (uso em CI).
+    cmds:
+      - task: generate
+      - cmd: git diff --exit-code
+        platforms: [linux, darwin]

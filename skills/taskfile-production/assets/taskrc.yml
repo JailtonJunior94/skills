@@ -1,0 +1,7 @@
+# Configuracao de execucao do Task (.taskrc.yml).
+# Ref: https://taskfile.dev/docs/reference/config
+# Falha o conjunto de dependencias paralelas assim que uma falhar.
+failfast: true
+# Prompta variaveis obrigatorias ausentes apenas em terminal interativo.
+# Em CI (sem TTY) o Task ignora o prompt e falha normalmente.
+interactive: false
